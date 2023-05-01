@@ -12,16 +12,12 @@ contract HomeRepair {
         string description;
         bool isAccepted;
         uint256 price;
-        bool isConfirmed;
+        address[] isConfirmed;
         bool isJobDone;
     }
     mapping(uint256 => MyData) public request;
     address public owner;
-    mapping(uint256 => string) public requests;
-    mapping(uint256 => bool) public acceptedRequests;
-    mapping(uint256 => uint256) public prices;
-    mapping(uint256 => bool) public confirmedRequests;
-    mapping(uint256 => bool) public isJobDone;
+    uint256 homeRepairBalance;
 
     constructor() {
         owner = msg.sender;
@@ -58,17 +54,31 @@ contract HomeRepair {
             request[id].isAccepted == true,
             "Request has not been accepted yet!"
         );
-        request[id].isConfirmed = true;
+        for(uint i = 0; i < request[id].isConfirmed.length; i++){
+            if(request[id].isConfirmed[i] == owner){
+                require(false, "You already accepted this request!");
+            }
+        }
+        request[id].isConfirmed.push(owner);
     }
 
     // 5. Verify that the job is done
     function jobVerify(uint256 id) public {
         // require(bytes(requests[id]).length > 0, "Request with given id does not exist!");
         require(
-            acceptedRequests[id] == true,
+            request[id].isAccepted == true,
             "Request has not been accepted yet!"
         );
         request[id].isJobDone = true;
+    }
+
+    // 6. Execute a repair request
+    function paying(uint256 id) public {
+        require(
+            request[id].isAccepted == true,
+            "Request has not been accepted yet!"
+        );
+        homeRepairBalance += request[id].price;
     }
 
 }
