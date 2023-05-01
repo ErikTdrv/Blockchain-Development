@@ -21,6 +21,10 @@ contract HomeRepair {
         requests[requestId] = requestDescription;
         acceptedRequests[requestId] = false;
     }
-   
+    // 2. Accept a repair request
+    function acceptRepairRequest(uint256 requestId) public {
+        acceptedRequests[requestId] = true;
+    }
+
 
 }
