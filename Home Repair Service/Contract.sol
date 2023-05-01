@@ -11,8 +11,9 @@ contract HomeRepair {
     address public owner;
     mapping(uint256 => string) public requests;
     mapping(uint256 => bool) public acceptedRequests;
-    mapping (uint256 => uint256) public prices;
-
+    mapping(uint256 => uint256) public prices;
+    mapping(uint256 => bool) public confirmRequest;
+    
     constructor() {
         owner = msg.sender;
     }
@@ -43,5 +44,18 @@ contract HomeRepair {
             "Request has not been accepted yet!"
         );
         prices[id] = price;
+    }
+
+    // 4. Confirm a repair request
+    function confirmRequest(uint256 id) public {
+        require(
+            bytes(requests[id]).length > 0,
+            "Request with given id does not exist!"
+        );
+        require(
+            acceptedRequests[id] == true,
+            "Request has not been accepted yet!"
+        );
+        confirmedRequests[id] = true;
     }
 }
