@@ -17,7 +17,7 @@ contract HomeRepair {
     }
     mapping(uint256 => MyData) public request;
     address public owner;
-    uint256 homeRepairBalance;
+    uint256 homeRepairerBalance;
 
     constructor() {
         owner = msg.sender;
@@ -78,7 +78,11 @@ contract HomeRepair {
             request[id].isAccepted == true,
             "Request has not been accepted yet!"
         );
-        homeRepairBalance += request[id].price;
+        homeRepairerBalance += request[id].price;
     }
-
+    // 7. Money Back
+    function takeMoneyBack(uint256 id) public {
+        require(homeRepairerBalance >= request[id].price, "You did not pay your repair!");
+        homeRepairerBalance -= request[id].price;
+    }
 }
