@@ -38,7 +38,10 @@ contract HomeRepair {
 
     // 3. Add a payment
     function addPayment(uint256 id, uint256 price) public {
-        // require(request[id].description.length != 0, "Request with given id does not exist!");
+        require(
+            bytes(request[id].description).length > 0,
+            "Request with given id does not exist!"
+        );
         require(price > 0, "Price should be a valid number!");
         require(
             request[id].isAccepted == true,
@@ -49,22 +52,29 @@ contract HomeRepair {
 
     // 4. Confirm a repair request
     function confirmRequest(uint256 id) public {
-        // require(bytes(requests[id]).length > 0, "Request with given id does not exist!");
+        require(
+            bytes(request[id].description).length > 0,
+            "Request with given id does not exist!"
+        );
+
         require(
             request[id].isAccepted == true,
             "Request has not been accepted yet!"
         );
-        for(uint i = 0; i < request[id].isConfirmed.length; i++){
-            if(request[id].isConfirmed[i] == owner){
+        for (uint256 i = 0; i < request[id].isConfirmed.length; i++) {
+            if (request[id].isConfirmed[i] == msg.sender) {
                 require(false, "You already accepted this request!");
             }
         }
-        request[id].isConfirmed.push(owner);
+        request[id].isConfirmed.push(msg.sender);
     }
 
     // 5. Verify that the job is done
     function jobVerify(uint256 id) public {
-        // require(bytes(requests[id]).length > 0, "Request with given id does not exist!");
+        require(
+            bytes(request[id].description).length > 0,
+            "Request with given id does not exist!"
+        );
         require(
             request[id].isAccepted == true,
             "Request has not been accepted yet!"
@@ -75,14 +85,31 @@ contract HomeRepair {
     // 6. Execute a repair request
     function paying(uint256 id) public {
         require(
+            bytes(request[id].description).length > 0,
+            "Request with given id does not exist!"
+        );
+
+        require(
             request[id].isAccepted == true,
             "Request has not been accepted yet!"
         );
+        require(
+            request[id].isConfirmed.length >= 2,
+            "The request was not confirmed by at least 2 auditors!"
+        );
         homeRepairerBalance += request[id].price;
     }
+
     // 7. Money Back
     function takeMoneyBack(uint256 id) public {
-        require(homeRepairerBalance >= request[id].price, "You did not pay your repair!");
+        require(
+            bytes(request[id].description).length > 0,
+            "Request with given id does not exist!"
+        );
+        require(
+            homeRepairerBalance >= request[id].price,
+            "You did not pay your repair!"
+        );
         homeRepairerBalance -= request[id].price;
     }
 }
