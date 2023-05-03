@@ -16,12 +16,14 @@ contract HomeRepair {
         bool isJobDone;
     }
     mapping(uint256 => MyData) public request;
-    address public owner;
+    address payable public owner;
     uint256 homeRepairerBalance;
 
     constructor() {
-        owner = msg.sender;
+        // Let's say that the owner has an account and it's the following one:
+        owner = payable(0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB);
     }
+    function deposit() public payable {}
 
     // 1. Add a repair request
     function addRepairRequest(
@@ -32,22 +34,21 @@ contract HomeRepair {
     }
 
     // 2. Accept a repair request
-    function acceptRepairRequest(uint256 requestId) public {
-        request[requestId].isAccepted = true;
-    }
-
-    // 3. Add a payment
-    function addPayment(uint256 id, uint256 price) public {
+    function acceptRepairRequest(uint256 requestId, uint256 price) public {
         require(
-            bytes(request[id].description).length > 0,
+            bytes(request[requestId].description).length > 0,
             "Request with given id does not exist!"
         );
         require(price > 0, "Price should be a valid number!");
-        require(
-            request[id].isAccepted == true,
-            "Request has not been accepted yet!"
-        );
-        request[id].price = price;
+        request[requestId].isAccepted = true;
+        request[requestId].price = price;
+    }
+
+    // 3. Add a payment
+    function addPayment(address payable repairer ,uint amount, uint256 id) public payable  {
+        require(amount > 0, "Price should be a valid number!"); 
+        require(amount == request[id].price, "Invalid price!"); 
+        repairer.transfer(amount);
     }
 
     // 4. Confirm a repair request
@@ -83,6 +84,7 @@ contract HomeRepair {
     }
 
     // 6. Execute a repair request
+    // You did not specify If the payment will proceed in task 2 or in task 6, there is payment in both!
     function paying(uint256 id) public {
         require(
             bytes(request[id].description).length > 0,
@@ -101,15 +103,17 @@ contract HomeRepair {
     }
 
     // 7. Money Back
-    function takeMoneyBack(uint256 id) public {
-        require(
-            bytes(request[id].description).length > 0,
-            "Request with given id does not exist!"
-        );
-        require(
-            homeRepairerBalance >= request[id].price,
-            "You did not pay your repair!"
-        );
-        homeRepairerBalance -= request[id].price;
+    function takeMoneyBack() public {
+        uint256 amount = address(this).balance;
+        payable(msg.sender).transfer(amount);
+        // require(
+        //     bytes(request[id].description).length > 0,
+        //     "Request with given id does not exist!"
+        // );
+        // require(
+        //     homeRepairerBalance >= request[id].price,
+        //     "You did not pay your repair!"
+        // );
+        // homeRepairerBalance -= request[id].price;
     }
 }
