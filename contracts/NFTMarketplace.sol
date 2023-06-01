@@ -45,4 +45,8 @@ contract NFTMarketplace is NFT {
 
         emit NFTCreated(newTokenId, msg.sender, name, description);
     }
+    function addMetadataURI(string memory metadata, uint256 tokenId) external {
+        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not owner nor approved");
+        _nfts[tokenId].metadataURI = metadata;
+    }
 }
