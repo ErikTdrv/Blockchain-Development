@@ -65,8 +65,24 @@ contract NFTMarketplace is NFT {
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not owner nor approved");
         require(!_nfts[tokenId].listedForSale, "NFT is already listed for sale");
         require(price > 0, "Price must be a valid number!");
-
+        
         _nfts[tokenId].listedForSale = true;
         _nfts[tokenId].salePrice = price;
+    }
+
+     function buyNFT(uint256 tokenId) external payable{
+        address payable seller = payable(ownerOf(tokenId));
+        address buyer = msg.sender;
+        uint256 salePrice = _nfts[tokenId].salePrice;
+        require(msg.value >= salePrice, "Price must be equal or more than the sale price!");
+        _nfts[tokenId].listedForSale = false;
+        _nfts[tokenId].salePrice = 0;
+
+        _transfer(seller, buyer, tokenId);
+
+        seller.transfer(salePrice);
+
+        emit NFTSold(tokenId, seller, buyer, salePrice);
+
     }
 }
