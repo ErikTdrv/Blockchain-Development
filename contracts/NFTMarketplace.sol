@@ -60,4 +60,13 @@ contract NFTMarketplace is NFT {
         require(_exists(tokenId), "ERC721: URI query for nonexistent token");
         return _nfts[tokenId].metadataURI;
     }
+
+    function listNftForSale(uint256 tokenId, uint256 price) external {
+        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not owner nor approved");
+        require(!_nfts[tokenId].listedForSale, "NFT is already listed for sale");
+        require(price > 0, "Price must be a valid number!");
+
+        _nfts[tokenId].listedForSale = true;
+        _nfts[tokenId].salePrice = price;
+    }
 }
