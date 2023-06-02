@@ -70,11 +70,17 @@ contract NFTMarketplace is NFT {
         _nfts[tokenId].salePrice = price;
     }
 
-     function buyNFT(uint256 tokenId) external payable{
+    function buyNFT(uint256 tokenId) external payable {
+        require(_exists(tokenId), "ERC721: URI query for nonexistent token");
+        require(_nfts[tokenId].listedForSale == true, "NFT is not listed for sale!");
+        
         address payable seller = payable(ownerOf(tokenId));
         address buyer = msg.sender;
         uint256 salePrice = _nfts[tokenId].salePrice;
-        require(msg.value >= salePrice, "Price must be equal or more than the sale price!");
+        require(
+            msg.value >= salePrice,
+            "Price must be equal or more than the sale price!"
+        );
         _nfts[tokenId].listedForSale = false;
         _nfts[tokenId].salePrice = 0;
 
@@ -83,6 +89,5 @@ contract NFTMarketplace is NFT {
         seller.transfer(salePrice);
 
         emit NFTSold(tokenId, seller, buyer, salePrice);
-
     }
 }
