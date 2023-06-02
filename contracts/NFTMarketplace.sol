@@ -101,4 +101,10 @@ contract NFTMarketplace is NFT {
 
         emit NFTSold(tokenId, seller, buyer, salePrice);
     }
+    function claimProfits() external {
+        require(ownerProfits[msg.sender] > 0, "No profits to claim!");
+        uint256 amount = ownerProfits[msg.sender];
+        ownerProfits[msg.sender] = 0;
+        payable(msg.sender).transfer(amount);
+    }
 }
