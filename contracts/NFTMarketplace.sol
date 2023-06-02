@@ -19,8 +19,9 @@ contract NFTMarketplace is NFT {
         bool listedForSale;
         uint256 salePrice;
     }
-
+    uint256 marketplaceFeePercentage = 10;
     mapping(uint256 => theNFT) private _nfts;
+    mapping(address => uint256) private ownerProfits;
 
     event NFTCreated(
         uint256 indexed tokenId,
@@ -54,18 +55,26 @@ contract NFTMarketplace is NFT {
         _nfts[tokenId].metadataURI = metadata;
     }
 
-    function getMetadataURI(
-        uint256 tokenId
-    ) external view returns (string memory) {
+    function getMetadataURI(uint256 tokenId)
+        external
+        view
+        returns (string memory)
+    {
         require(_exists(tokenId), "ERC721: URI query for nonexistent token");
         return _nfts[tokenId].metadataURI;
     }
 
     function listNftForSale(uint256 tokenId, uint256 price) external {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not owner nor approved");
-        require(!_nfts[tokenId].listedForSale, "NFT is already listed for sale");
+        require(
+            _isApprovedOrOwner(msg.sender, tokenId),
+            "ERC721: caller is not owner nor approved"
+        );
+        require(
+            !_nfts[tokenId].listedForSale,
+            "NFT is already listed for sale"
+        );
         require(price > 0, "Price must be a valid number!");
-        
+
         _nfts[tokenId].listedForSale = true;
         _nfts[tokenId].salePrice = price;
     }
@@ -73,10 +82,12 @@ contract NFTMarketplace is NFT {
     function buyNFT(uint256 tokenId) external payable {
         require(_exists(tokenId), "ERC721: URI query for nonexistent token");
         require(_nfts[tokenId].listedForSale == true, "NFT is not listed for sale!");
-        
         address payable seller = payable(ownerOf(tokenId));
         address buyer = msg.sender;
         uint256 salePrice = _nfts[tokenId].salePrice;
+        uint256 marketplaceFee = (salePrice * marketplaceFeePercentage) / 100;
+        require(marketplaceFee > 0, "Fee must be a positive number!");
+        ownerProfits[seller] += marketplaceFee;
         require(
             msg.value >= salePrice,
             "Price must be equal or more than the sale price!"
